@@ -1,12 +1,12 @@
 import express from "express"
 import bodyParser from "body-parser"
 import dotenv from "dotenv"
-import {MongoClient} from "mongodb"
 import {User, convertToUser} from "./DbItems/user.mjs"
 import { CustomError } from "./Customs/CustomError.mjs"
 import { PasswordHelper } from "./Helpers/passwordHelper.mjs"
 import { EmailHelper } from "./Helpers/emailHelper.mjs"
 import { FileHelper } from "./Helpers/fileHelper.mjs"
+import { CollectionHelper } from "./Helpers/collectionHelper.mjs"
 
 //.Env config
 dotenv.config();
@@ -14,12 +14,10 @@ const fileHelper = new FileHelper()
 const env = dotenv.parse(await fileHelper.readFile("./.env"))
 
 //MongoDb config
-const uri = "mongodb+srv://"+env.DBUSER+":"+env.DBPASSWORD+"@"+env.DBPASSWORD2+".mongodb.net/?retryWrites=true&w=majority";
-const client = new MongoClient(uri);
-const db = client.db(process.env.DBNAME)
-const usersCollection = db.collection("users")
+const url = "mongodb+srv://"+env.DBUSER+":"+env.DBPASSWORD+"@"+env.DBPASSWORD2+".mongodb.net/?retryWrites=true&w=majority"
 
 //Helpers config
+const usersCollection = new CollectionHelper(url, env.DBNAME, "users")
 const emailHelper = new EmailHelper(env.GMAILUSER, env.GMAILKEY)
 const adminHelper = new EmailHelper(env.ADMINGMAILUSER, env.ADMINGMAILKEY)
 const passwordHelper = new PasswordHelper(12)
@@ -217,50 +215,6 @@ app.post("/inform/user" , async (req, res, next) => {
     }
 },errorHandler)
 
-async function insertUser(item){
-    let _id = await insertOneItem(usersCollection, item)
-    return _id
-}
-
-async function findUser(query){
-    let user = await findOneItem(usersCollection, query)
-    return user
-}
-
-async function updateUser(query, newQuery){
-    let updateResp = await updateOneItem(usersCollection, query, newQuery)
-    return updateResp
-}
-
-async function deleteUser(query){
-    let deleteResp = await deleteOneItem(usersCollection, query)
-    return deleteResp
-}
-
-//Mongodb Crud Ops
-async function insertOneItem(collection , item){
-    let insertId = await collection.insertOne(item)
-    return insertId
-}
-
-async function findOneItem(collection, query){
-    let foundItem = await collection.findOne(query)
-    return foundItem
-}
-
-async function updateOneItem(collection, query , newQuery){
-    let updateResp = await collection.updateOne(query, newQuery)
-    return updateResp
-}
-
-async function deleteOneItem(collection, query){
-    let deleteResp = await collection.deleteOne(query)
-    return deleteResp
-}
-
-async function closeDbConnection(){
-    return await client.close()
-}
 
 //Authentication
 async function createAndSendNewPassword(){

@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt"
 
 export class PasswordHelper{
-
+    
     constructor(saltRounds){
         let allChars = [];
         let allSymbols = [];
@@ -17,6 +17,7 @@ export class PasswordHelper{
         this.getAllSymbols = () =>{return allSymbols}
         this.saltRounds = saltRounds
     }
+
     async hashPassword(password){
         let hashedPassword = await bcrypt.hash(password, this.saltRounds)
         return hashedPassword

@@ -2,6 +2,7 @@ import nodemailer from "nodemailer"
 import { CustomError } from "../Customs/CustomError.mjs";
 
 export class EmailHelper{
+    
     constructor(gmailUser, gmailAuth){
         this.getGmailUser = () => {return gmailUser}
         this.transporter = this.createTransporter(gmailUser, gmailAuth)
@@ -51,5 +52,5 @@ export class EmailHelper{
         let resp = await this.transporter.sendMail(email)
         return resp
     }
-    
+
 }
