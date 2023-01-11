@@ -1,30 +1,35 @@
-import { DatabaseHelper } from "./databaseHelper.mjs";
+import {db, closeDbConnection} from "./databaseHelper.mjs"
+export class CollectionHelper{
 
-export class CollectionHelper extends DatabaseHelper{
-
-    constructor(url, dbName, collectionName){
-        super(url, dbName)
-        const collection = super.db.collection(collectionName)
+    constructor(collectionName){
+        const collection = db.collection(collectionName)
         this.getCollection = () => {return collection}
     }
 
-    async insertUser(item){
-        let _id = await super.insertOneItem(this.getUsersCollection(), item)
-        return _id
+    //Mongodb Crud Ops
+    async insertOneItem(item){
+        let insertId = await this.getCollection().insertOne(item)
+        return insertId
     }
-    
-    async findUser(query){
-        let user = await super.findOneItem(this.getUsersCollection(), query)
-        return user
+
+    async findOneItem(query){
+        let foundItem = await this.getCollection().findOne(query)
+        return foundItem
     }
-    
-    async updateUser(query, newQuery){
-        let updateResp = await super.updateOneItem(this.getUsersCollection(), query, newQuery)
+
+    async updateOneItem(query , newQuery){
+        let updateResp = await this.getCollection().updateOne(query, newQuery)
         return updateResp
     }
-    
-    async deleteUser(query){
-        let deleteResp = await super.deleteOneItem(this.getUsersCollection(), query)
+
+    async deleteOneItem(query){
+        let deleteResp = await this.getCollection().deleteOne(query)
         return deleteResp
+    }
+    
+
+    async closeDb(){
+        let resp = await closeDbConnection()
+        return resp
     }
 }

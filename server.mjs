@@ -1,6 +1,7 @@
 import express from "express"
 import bodyParser from "body-parser"
 import dotenv from "dotenv"
+
 import {User, convertToUser} from "./DbItems/user.mjs"
 import { CustomError } from "./Customs/CustomError.mjs"
 import { PasswordHelper } from "./Helpers/passwordHelper.mjs"
@@ -13,11 +14,10 @@ dotenv.config();
 const fileHelper = new FileHelper()
 const env = dotenv.parse(await fileHelper.readFile("./.env"))
 
-//MongoDb config
-const url = "mongodb+srv://"+env.DBUSER+":"+env.DBPASSWORD+"@"+env.DBPASSWORD2+".mongodb.net/?retryWrites=true&w=majority"
+//MongoDb collections
+const usersCollection = new CollectionHelper("users")
 
 //Helpers config
-const usersCollection = new CollectionHelper(url, env.DBNAME, "users")
 const emailHelper = new EmailHelper(env.GMAILUSER, env.GMAILKEY)
 const adminHelper = new EmailHelper(env.ADMINGMAILUSER, env.ADMINGMAILKEY)
 const passwordHelper = new PasswordHelper(12)
@@ -145,7 +145,7 @@ app.get("/" , (req , res) =>{
 app.post("/insert/user" , async (req, res, next) =>{
     try{
         let user = convertToUser(req.body)
-        let _id = await insertUser(user)
+        let _id = await usersCollection.insertOneItem(user)
         res.send(_id)
     }
     catch(err){
@@ -157,7 +157,7 @@ app.post("/insert/user" , async (req, res, next) =>{
 app.post("/get/user" , async (req, res, next) =>{
     try{
         let query = req.body
-        let user = await findUser(query)
+        let user = await usersCollection.findOneItem(query)
         if (user == null){
             throw CustomError.DbItemNotFound("user")
         }
@@ -176,7 +176,7 @@ app.post("/update/user" , async (req, res, next) =>{
         let newQuery = {
             $set: newValue
         }
-        let updateResp = await updateUser(query, newQuery)
+        let updateResp = await usersCollection.updateOneItem(query, newQuery)
         res.send(updateResp)
     }
     catch(err){
@@ -188,7 +188,7 @@ app.post("/update/user" , async (req, res, next) =>{
 app.post("/delete/user", async (req, res, next) =>{
     try{
         let query = req.body
-        let deleteResp = await deleteUser(query)
+        let deleteResp = await usersCollection.deleteOneItem(query)
         res.send(deleteResp)
     }
     catch(err){
@@ -214,7 +214,6 @@ app.post("/inform/user" , async (req, res, next) => {
         return
     }
 },errorHandler)
-
 
 //Authentication
 async function createAndSendNewPassword(){

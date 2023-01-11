@@ -1,35 +1,11 @@
 import {MongoClient} from "mongodb"
+import dotenv from "dotenv"
+dotenv.config()
 
-export class DatabaseHelper{
-    client
-    db
-    constructor(url, dbName){
-        this.client = new MongoClient(url);
-        this.db = this.client.db(dbName)
-    }
+const uri = "mongodb+srv://"+process.env.DBUSER+":"+process.env.DBPASSWORD+"@"+process.env.DBPASSWORD2+".mongodb.net/?retryWrites=true&w=majority";
+const client = new MongoClient(uri);
+export const db = client.db(process.env.DBNAME)
 
-    //Mongodb Crud Ops
-    async insertOneItem(collection , item){
-        let insertId = await collection.insertOne(item)
-        return insertId
-    }
-
-    async findOneItem(collection, query){
-        let foundItem = await collection.findOne(query)
-        return foundItem
-    }
-
-    async updateOneItem(collection, query , newQuery){
-        let updateResp = await collection.updateOne(query, newQuery)
-        return updateResp
-    }
-
-    async deleteOneItem(collection, query){
-        let deleteResp = await collection.deleteOne(query)
-        return deleteResp
-    }
-
-    async closeDbConnection(){
-        return await this.getClient().close()
-    }
+export async function closeDbConnection(){
+    return await client.close()
 }
