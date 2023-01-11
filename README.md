@@ -1,6 +1,5 @@
 # BaseExpressServer
 
-
 Starter code for Express server with MongoDb connection and CRUD operations<br/>
 To connect your mongodb:<br/>
   1. Run "touch .env" in project directory 
