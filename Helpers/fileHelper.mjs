@@ -1,29 +1,26 @@
+import { captureRejectionSymbol } from "events"
 import fs from "fs"
+import util from "util"
 
 export class FileHelper{
-    readFile(pathToFile){
-        return new Promise((resolve, reject) =>{
-            fs.readFile(pathToFile, 'utf8' , (err, data) =>{
-                if(err != null){
-                    reject(err)
-                }
-                else{
-                    resolve(data)
-                }
-            })
-        })
+    readFileAsync = util.promisify(fs.readFile)
+    writeFileAsync = util.promisify(fs.writeFile)
+
+    async readFile(pathToFile){
+        try{
+            return await readFileAsync(pathToFile, 'utf8')
+        }
+        catch(err){
+            console.log(err)
+        }
     }
 
-    writeFile(pathToFile, item){
-        return new Promise((resolve, reject) =>{
-            fs.writeFile(pathToFile, item, (err) =>{
-                if (err != null){
-                    reject(err)
-                }
-                else{
-                    resolve(true)
-                }
-            })
-        }) 
+   async  writeFile(pathToFile, item){
+        try{
+            return await writeFileAsync(pathToFile, item)
+        }
+        catch(err){
+            console.log(err)
+        }
     }
 }
