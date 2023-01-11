@@ -1,12 +1,19 @@
 export class User{
-    constructor(_id, name, surname, email, age, isVerified, isEnable){
+    constructor(_id, name, surname, email,password, age, gender, status, isVerified, isEnabled){
          this._id = _id
          this.name = name
          this.surname = surname
          this.email = email
+         this.password = password
          this.age = age
-         this.isVerified = isVerified
-         this.isEnable = isEnable
+         this.gender = gender
+         this.status = {
+            lastSeen : new Date().getTime(),
+            userStatus: status,
+            isVerified : isVerified,
+            isEnabled : isEnabled
+         }
+
     }
 }
 
@@ -28,18 +35,31 @@ export function convertToUser(reqBody){
     if (email == undefined){
         throw CustomError.UserPropertyNotFound("email")
     }
+    let password = reqBody.password
+    if (password == undefined){
+        throw CustomError.UserPropertyNotFound("password")
+    }
     let age = reqBody.age
     if (age == undefined){
         throw CustomError.UserPropertyNotFound("age")
+    }
+    let gender = reqBody.gender
+    if (gender == undefined){
+        throw CustomError.UserPropertyNotFound("gender")
+    }
+    let status = reqBody.status
+    if (status == undefined){
+        throw CustomError.UserPropertyNotFound("status")
     }
     let isVerified = reqBody.isVerified
     if (isVerified == undefined){
         isVerified = false
     }
-    let isEnable = reqBody.isEnable
-    if (isEnable== undefined){
-        isEnable = false
+    let isEnabled = reqBody.isEnabled
+    if (isEnabled == undefined){
+        isEnabled = true
     }
-    let newUser = new User(_id, name, surname, email, age, isVerified, isEnable)
+
+    let newUser = new User(_id, name, surname, email, password, age, gender, status, isVerified, isEnabled)
     return newUser
 }

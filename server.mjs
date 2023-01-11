@@ -74,23 +74,28 @@ const logger = (req, res, next) =>{
 }
 
 const authenticator = async (req , res , next) =>{
-    if (await passwordHelper.comparePassword(req.headers.serverkey, process.env.SERVERKEY)){
-        next()
-        return
-    }
-    else{
-        wrongAuthCount ++
-        next(CustomError.AuthenticationError)
-        if(wrongAuthCount > maxWrongAuthCount && !isAuthMailSent){
-            isAuthMailSent = true
-            await createAndSendNewPassword()
+    try{
+        if (await passwordHelper.comparePassword(req.headers.serverkey, process.env.SERVERKEY)){
+            next()
+            return
         }
+        else{
+            wrongAuthCount ++
+            next(CustomError.AuthenticationError)
+            if(wrongAuthCount > maxWrongAuthCount && !isAuthMailSent){
+                isAuthMailSent = true
+                await createAndSendNewPassword()
+            }
+        }
+    }
+    catch(err){
+        next(err)
     }
 }
 
 const errorHandler = (err, req, res, next) => {
     console.log(err.message)
-    res.status(500).send('Something went wrong: ' + err)
+    res.status(500).send(`Something went wrong: ${err.message}`)
 }
 
 app.use(logger)
@@ -152,6 +157,7 @@ insertReq.post("/user" , async (req, res, next) =>{
     try{
         let body = req.body
         let user = convertToUser(body)
+        user.password = await passwordHelper.hashPassword(user.password)
         let _id = await usersCollection.insertOneItem(user)
         res.send(_id)
     }
@@ -200,6 +206,10 @@ getReq.post("/users", async (req, res, next) =>{
         if (userList.length == 0){
             throw CustomError.DbItemNotFound("users")
         }
+        userList.forEach(user => {
+            user.password = null
+        })
+
         res.send(userList)
     }
     catch(err){
