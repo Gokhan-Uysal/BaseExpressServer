@@ -34,6 +34,10 @@ const timePadding = 1 //In minutes
 //Express app and routers
 const app = express()
 const admin = express.Router()
+const getReq = express.Router()
+const insertReq = express.Router()
+const updateReq = express.Router()
+const deleteReq = express.Router()
 
 app.use(bodyParser.urlencoded({extended:true}))
 app.use(express.json())
@@ -93,7 +97,10 @@ app.use(logger)
 app.use(authenticator);
 app.use(errorHandler)
 app.use("/admin" , admin)
-admin.use(authenticator)
+app.use("/get", getReq)
+app.use("/insert", insertReq)
+app.use("/update", updateReq)
+app.use("/delete", deleteReq)
 
 const server = app.listen(PORT , () =>{
     console.log("Server is running on port " + PORT);
@@ -141,9 +148,10 @@ app.get("/" , (req , res) =>{
     res.sendStatus(200)
 })
 
-app.post("/insert/user" , async (req, res, next) =>{
+insertReq.post("/user" , async (req, res, next) =>{
     try{
-        let user = convertToUser(req.body)
+        let body = req.body
+        let user = convertToUser(body)
         let _id = await usersCollection.insertOneItem(user)
         res.send(_id)
     }
@@ -153,7 +161,24 @@ app.post("/insert/user" , async (req, res, next) =>{
     }
 }, errorHandler)
 
-app.post("/get/user" , async (req, res, next) =>{
+insertReq.post("/users", async (req, res, next) =>{
+    try{
+        let body = req.body
+        let userList = []
+        body.forEach(userData => {
+            let user = convertToUser(userData)
+            userList.push(user)
+        });
+        let _id = await usersCollection.insertManyItems(userList)
+        res.send(_id)
+    }
+    catch(err){
+        next(err)
+        return
+    }
+}, errorHandler)
+
+getReq.post("/user" , async (req, res, next) =>{
     try{
         let query = req.body
         let user = await usersCollection.findOneItem(query)
@@ -168,7 +193,22 @@ app.post("/get/user" , async (req, res, next) =>{
     }
 }, errorHandler)
 
-app.post("/update/user" , async (req, res, next) =>{
+getReq.post("/users", async (req, res, next) =>{
+    try{
+        let query = req.body
+        let userList = await usersCollection.findManyItems(query, 10)
+        if (userList.length == 0){
+            throw CustomError.DbItemNotFound("users")
+        }
+        res.send(userList)
+    }
+    catch(err){
+        next(err)
+        return
+    }
+}, errorHandler)
+
+updateReq.post("/user" , async (req, res, next) =>{
     try{
         let query = req.body.query
         let newValue = req.body.newQuery
@@ -184,10 +224,38 @@ app.post("/update/user" , async (req, res, next) =>{
     }
 },errorHandler)
 
-app.post("/delete/user", async (req, res, next) =>{
+updateReq.post("/users", async (req, res, next) =>{
+    try{
+        let query = req.body.query
+        let newValue = req.body.newQuery
+        let newQuery = {
+            $set: newValue
+        }
+        let updateResp = await usersCollection.updateManyItems(query, newQuery)
+        res.send(updateResp)
+    }
+    catch(err){
+        next(err)
+        return
+    }
+}, errorHandler)
+
+deleteReq.post("/user", async (req, res, next) =>{
     try{
         let query = req.body
         let deleteResp = await usersCollection.deleteOneItem(query)
+        res.send(deleteResp)
+    }
+    catch(err){
+        next(err)
+        return
+    }
+},errorHandler)
+
+deleteReq.post("/user", async (req, res, next) =>{
+    try{
+        let query = req.body
+        let deleteResp = await usersCollection.deleteManyItems(query)
         res.send(deleteResp)
     }
     catch(err){
