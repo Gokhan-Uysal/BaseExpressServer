@@ -11,7 +11,7 @@ export const CustomError = {
     EmailPropertyNotFound: (property) =>{
         return Error("Email "+ property +" not found")
     },
-    InternalServerError: Error("Server connection error"),
     ReachedRequestCallCount: (reqCount) => Error("Client reached request call count with count: " + reqCount),
+    InternalServerError: Error("Server connection error"),
     AuthenticationError: Error("Authentication failed")
 }

@@ -51,4 +51,5 @@ export class EmailHelper{
         let resp = await this.transporter.sendMail(email)
         return resp
     }
+    
 }
