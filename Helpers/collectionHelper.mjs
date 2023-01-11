@@ -27,7 +27,6 @@ export class CollectionHelper{
         return deleteResp
     }
     
-
     async closeDb(){
         let resp = await closeDbConnection()
         return resp

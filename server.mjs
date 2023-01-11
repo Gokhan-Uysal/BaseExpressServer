@@ -11,15 +11,14 @@ import { CollectionHelper } from "./Helpers/collectionHelper.mjs"
 
 //.Env config
 dotenv.config();
-const fileHelper = new FileHelper()
-const env = dotenv.parse(await fileHelper.readFile("./.env"))
 
 //MongoDb collections
 const usersCollection = new CollectionHelper("users")
 
 //Helpers config
-const emailHelper = new EmailHelper(env.GMAILUSER, env.GMAILKEY)
-const adminHelper = new EmailHelper(env.ADMINGMAILUSER, env.ADMINGMAILKEY)
+const fileHelper = new FileHelper()
+const emailHelper = new EmailHelper(process.env.GMAILUSER, process.env.GMAILKEY)
+const adminHelper = new EmailHelper(process.env.ADMINGMAILUSER, process.env.ADMINGMAILKEY)
 const passwordHelper = new PasswordHelper(12)
 
 //Auth config
@@ -41,7 +40,7 @@ app.use(express.json())
 app.use(bodyParser.json())
 
 //Express config
-const PORT = env.PORT
+const PORT = process.env.PORT
 const logger = (req, res, next) =>{
     requestCount ++
     if (isInitialReq){
